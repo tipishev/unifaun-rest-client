@@ -26,13 +26,7 @@ class BaseClient(object):
 class UnifaunClient(BaseClient):
     '''Unifaun-specific logic'''
 
-    def get_agents(
-        self,
-        type=SCHENKER,
-        zip='17147',
-        street='',
-        countryCode=SE,
-    ):
+    def get_agents(self, type, zip, street, countryCode):
         query_parameters = {
             'type': type,
             'zip': zip,
@@ -44,11 +38,7 @@ class UnifaunClient(BaseClient):
     def create_address_validation_status(self):
         '''post /addresses/status'''
 
-    def get_zipcode_info(
-        self,
-        zip,
-        countryCode=SE,
-    ):
+    def get_zipcode_info(self, zip, countryCode):
         query_parameters = {
             'zip': zip,
             'countryCode': countryCode,
@@ -88,7 +78,7 @@ class UnifaunClient(BaseClient):
     def get_shipments(self):
         '''get /shipments'''
 
-    def create_shipment(self):
+    def create_shipment(self, pdfConfig=DEFAULT):
         '''post /shipments'''
 
     def delete_shipment(self):
