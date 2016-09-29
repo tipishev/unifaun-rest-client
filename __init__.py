@@ -18,11 +18,10 @@ class BaseClient(object):
             self.session.auth = (user, password)
 
     def _get(self, url, **kwargs):
-        return self.session.get(self.base_uri + url, **kwargs)
+        return self.session.get(self.base_uri + url, **kwargs).json()
 
     def _post(self, url, data=None, json=None, **kwargs):
-        return self.session.post(self.base_uri + url, data=data, json=json, **kwargs)
-
+        return self.session.post(self.base_uri + url, data=data, json=json, **kwargs).json()
 
 class UnifaunClient(BaseClient):
     '''Unifaun-specific logic'''
