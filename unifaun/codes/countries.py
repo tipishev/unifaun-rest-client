@@ -1,2 +1,2 @@
-Sweden = 'SE'
-Finland = 'FI'
+SWEDEN = 'SE'
+FINLAND = 'FI'

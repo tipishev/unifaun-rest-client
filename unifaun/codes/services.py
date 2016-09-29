@@ -1,2 +1,2 @@
-PostNord_Parcel_SE = 'P15'
-Schenker_Ombud_Standard = 'BHP'
+POSTNORD_PARCEL_SE = 'P15'
+SCHENKER_OMBUD_STANDARD = 'BHP'
