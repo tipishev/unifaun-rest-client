@@ -73,3 +73,36 @@ shipment = {
 result = client.create_shipment(pdfConfig=LASER_A4, shipment=shipment)
 print(result)
 ```
+
+```
+[{'changed': '2016-09-29T14:48:34.560+0000',
+  'consolidated': False,
+  'created': '2016-09-29T14:48:34.560+0000',
+  'href': 'https://api.unifaun.com/rs-extapi/v1/shipments/31415926',
+  'id': '31415926',
+  'normalShipment': True,
+  'orderNo': '123456789',
+  'parcelCount': 1,
+  'parcels': [{'parcelNo': '69799319669SE',
+               'reference': None,
+               'returnParcelNo': None}],
+  'pdfs': [{'description': 'Label',
+            'href': 'https://api.unifaun.com/rs-extapi/v1/shipments/31415926/pdfs/271826',
+            'id': '271826',
+            'pdf': None}],
+  'previousPdfs': None,
+  'rcvCity': 'GÖTEBORG',
+  'rcvCountry': 'SE',
+  'rcvName': 'Bob',
+  'rcvZipcode': '41121',
+  'reference': 'Mr. Sender',
+  'returnShipment': False,
+  'serviceId': 'P15',
+  'shipDate': '2016-09-29T14:48:34.000+0000',
+  'shipmentNo': None,
+  'sndCity': 'SOLNA',
+  'sndCountry': 'SE',
+  'sndName': 'Sender AB',
+  'sndZipcode': '17144',
+  'status': 'PRINTED'}]
+```
