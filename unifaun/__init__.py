@@ -76,7 +76,7 @@ class UnifaunClient(BaseClient):
             'pdfConfig': pdfConfig,
             'shipment': shipment,
         }
-        self._post('/shipments', json=json)
+        return self._post('/shipments', json=json)
 
     def delete_shipment(self):
         '''delete /shipments/{shipmentId}'''
