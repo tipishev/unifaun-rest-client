@@ -1,6 +1,7 @@
 import requests
 
 from enums import CARRIERS, COUNTRIES
+from pdf_configs import DEFAULT
 
 BASE_URI = 'https://api.unifaun.com/rs-extapi/v1'
 
@@ -18,6 +19,9 @@ class BaseClient(object):
 
     def _get(self, url, **kwargs):
         return self.session.get(self.base_uri + url, **kwargs)
+
+    def _post(self, url, data=None, json=None, **kwargs):
+        return self.session.post(self.base_uri + url, data=data, json=json, **kwargs)
 
 
 class UnifaunClient(BaseClient):
@@ -42,9 +46,9 @@ class UnifaunClient(BaseClient):
         '''post /addresses/status'''
 
     def get_zipcode_info(
-            self,
-            zip='17147',
-            countryCode=SE,
+        self,
+        zip,
+        countryCode=SE,
     ):
         query_parameters = {
             'zip': zip,
