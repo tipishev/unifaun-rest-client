@@ -3,11 +3,14 @@
 ## Quick Start
 
 ```python
-> from unifaun import UnifaunClient
+from unifaun import UnifaunClient
+from enums import CARRIERS
 
-> client = UnifaunClient(user=API_ID, password=API_SECRET)
-> client.get_agents(zip=17144)
+client = UnifaunClient(user=API_ID, password=API_SECRET)
+client.get_agents(zip=17144, type=CARRIERS['DB Schenker Sverige'])
+```
 
+```
 [{'address1': 'SKYTTEHOLMSVÄGEN 5',
   'address2': '',
   'city': 'SOLNA',
