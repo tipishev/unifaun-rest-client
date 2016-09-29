@@ -1,0 +1,40 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "required": [ "href", "id" ],
+  "properties": {
+    "href":           { "type": "string" },
+    "id":             { "type": "string" },
+    "status":         { "type": "string" },
+    "orderNo":        { "type": "string" },
+    "reference":      { "type": "string" },
+    "serviceId":      { "type": "string" },
+    "parcelCount":    { "type": "integer" },
+    "sndName":        { "type": "string" },
+    "sndZipcode":     { "type": "string" },
+    "sndCity":        { "type": "string" },
+    "sndCountry":     { "type": "string" },
+    "rcvName":        { "type": "string" },
+    "rcvZipcode":     { "type": "string" },
+    "rcvCity":        { "type": "string" },
+    "rcvCountry":     { "type": "string" },
+    "created":        { "type": "string", "format": "date-time" },
+    "changed":        { "type": "string", "format": "date-time" },
+    "shipDate":       { "type": "string", "format": "date-time" },
+    "returnShipment": { "type": "boolean" },
+    "normalShipment": { "type": "boolean" },
+    "statuses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type":        { "type": "string" },
+          "field":       { "type": "string" },
+          "location":    { "type": "string" },
+          "messageCode": { "type": "string" },
+          "message":     { "type": "string" }
+        }
+      }
+    }
+  }
+}

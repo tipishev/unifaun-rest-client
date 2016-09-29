@@ -1,0 +1,75 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "fetchId":  { "type": "string" },
+    "minDelay": { "type": "number", "minimum": 0 },
+    "done":     { "type": "boolean" },
+    "shipments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [ "href", "id" ],
+        "properties": {
+          "href":           { "type": "string" },
+          "id":             { "type": "string" },
+          "status":         { "type": "string" },
+          "shipmentNo":     { "type": "string" },
+          "orderNo":        { "type": "string" },
+          "reference":      { "type": "string" },
+          "serviceId":      { "type": "string" },
+          "parcelCount":    { "type": "number" },
+          "sndName":        { "type": "string" },
+          "sndZipcode":     { "type": "string" },
+          "sndCity":        { "type": "string" },
+          "sndCountry":     { "type": "string" },
+          "rcvName":        { "type": "string" },
+          "rcvZipcode":     { "type": "string" },
+          "rcvCity":        { "type": "string" },
+          "rcvCountry":     { "type": "string" },
+          "created":        { "type": "string", "format": "date-time" },
+          "changed":        { "type": "string", "format": "date-time" },
+          "shipDate":       { "type": "string", "format": "date-time" },
+          "returnShipment": { "type": "boolean" },
+          "normalShipment": { "type": "boolean" },
+          "consolidated":   { "type": "boolean" },
+          "parcels": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "parcelNo":       { "type": "string" },
+                "returnParcelNo": { "type": "string" },
+                "reference":      { "type": "string" }
+              }
+            }
+          },
+          "pdfs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [ "href", "id" ],
+              "properties": {
+                "href":        { "type": "string" },
+                "id":          { "type": "string" },
+                "description": { "type": "string" }
+              }
+            }
+          },
+          "previousPdfs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [ "href", "id" ],
+              "properties": {
+                "href":        { "type": "string" },
+                "id":          { "type": "string" },
+                "description": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,1773 @@
+#%RAML 0.8
+title: REST API Documentation
+version: v1
+baseUri: https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1
+protocols: [ HTTPS ]
+securitySchemes:
+  - bearerToken:
+      description: Custom Bearer Token authentication based on an API Key.
+      type: x-custom-bearer-token
+      describedBy:
+        headers:
+          Authorization:
+            description: >
+              A custom bearer token.
+            type: string
+        responses:
+          401:
+            description: >
+              Invalid or expired token.
+          403:
+            description: >
+              The token is valid but it doesn't grant access to the operation attempted.
+  - basicAuth:
+      description: >
+        Basic authentication using an API Key.
+      type: Basic Authentication
+      describedBy:
+        responses:
+          401:
+            description: >
+              Invalid or expired token.
+          403:
+            description: >
+              The token is valid but it doesn't grant access to the operation attempted.
+traits:
+  - secured:
+      usage: Apply to any method that should be secured.
+      headers:
+        Authorization:
+          type: string
+          description: Custom Bearer Token based on API key.
+          example: Bearer XXXXXXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXX
+          required: false
+schemas:
+  - storedShipmentInfo: !include StoredShipmentInfo.jsonschema
+  - storedShipmentInfoList: !include StoredShipmentInfoList.jsonschema
+  - shipmentInfo: !include ShipmentInfo.jsonschema
+  - shipmentInfoList: !include ShipmentInfoList.jsonschema
+  - shipmentFetchInfoList: !include ShipmentFetchInfoList.jsonschema
+  - shipment: !include Shipment.jsonschema
+  - pdfConfig: !include PdfConfig.jsonschema
+  - shipmentPrint: !include ShipmentPrint.jsonschema
+  - shipmentConsolidatePrint: !include ShipmentConsolidatePrint.jsonschema
+  - pdfList: !include PdfList.jsonschema
+  - error: !include Error.jsonschema
+  - statusList: !include StatusList.jsonschema
+documentation:
+  - title: Introduction
+    content: !include Intro.md
+  - title: Samples
+    content: !include Samples.md
+  - title: Address Lookups
+    content: !include AddressLookup.md
+  - title: Creating Shipments
+    content: !include CreatingShipments.md
+# Addresses
+/addresses:
+  # Addresses / Agents 
+  /agents:
+    get:
+      securedBy: [bearerToken, basicAuth]
+      is: [secured]
+      description: >
+        Find agents close to a receiver's address for a carrier.
+        
+        
+        This service requires a license for the **PickUpLocator** function that can be ordered separately. To view functions 
+        available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+        by the **REST API PickUpLocator** license key.
+      queryParameters:
+        type:
+          displayName: type
+          type: string
+          description: Type of agents to find.
+          enum: [ SBTL, SBTLFI, PP, PPFI, POSTNORD, DHLSP, DHLSPCOD, GLS, MHM, MHT, ITELLA, ITELLASP, BRING, BUSSGODS, UPS ]
+          required: true
+        zip:
+          displayName: zip
+          type: string
+          description: The zip code of the receiver's address.
+          required: true
+        street:
+          displayName: street
+          type: string
+          description: The street name and number of the receiver's address.
+          required: false
+        countryCode:
+          displayName: countryCode
+          type: string
+          description: Two letter country code (from ISO-3166-1 alpha-2).
+          example: SE
+          required: true
+      responses: 
+        200: 
+          body: 
+            application/json: 
+              schema: |
+                {
+                  "type": "array",
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "items": {
+                    "type": "object",
+                    "required": [ "id", "name", "city", "countryCode" ],
+                    "properties": {
+                      "id":           { "type": "string" },
+                      "name":         { "type": "string" },
+                      "address1":     { "type": "string" },
+                      "address2":     { "type": "string" },
+                      "zipcode":      { "type": "string" },
+                      "city":         { "type": "string" },
+                      "state":        { "type": "string" },
+                      "countryCode":  { "type": "string" },
+                      "contact":      { "type": "string" },
+                      "phone":        { "type": "string" },
+                      "fax":          { "type": "string" },
+                      "email":        { "type": "string" },
+                      "sms":          { "type": "string" },
+                      "serviceType":  { "type": "string" },
+                      "serviceCode":  { "type": "string" },
+                      "openingHours": { "type": "string" }
+                    }
+                  }
+                }
+              example: |
+                [{
+                  "id": "586181",
+                  "name": "ICA Supermarket Sabbatsberg",
+                  "address1": "Dalagatan 9",
+                  "address2": null,
+                  "zipcode": "11361",
+                  "city": "STOCKHOLM",
+                  "state": null,
+                  "countryCode": "SE",
+                  "contact": null,
+                  "phone": null,
+                  "fax": null,
+                  "email": null,
+                  "sms": null,
+                  "serviceType": null,
+                  "serviceCode": null,
+                  "openingHours": null
+                }, {
+                  "id": "586169",
+                  "name": "Tidningsspecialisten",
+                  "address1": "Odengatan 30",
+                  "address2": null,
+                  "zipcode": "11351",
+                  "city": "STOCKHOLM",
+                  "state": null,
+                  "countryCode": "SE",
+                  "contact": null,
+                  "phone": null,
+                  "fax": null,
+                  "email": null,
+                  "sms": null,
+                  "serviceType": null,
+                  "serviceCode": null,
+                  "openingHours": null                  
+                }]
+        400:
+          description: >
+            Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+          body:
+            application/json:
+              schema: error
+              example: |
+                {
+                  "code": "MISSING",
+                  "message": "Missing zip argument"
+                }
+        500:
+          description: >
+            Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+            Unifaun Support for additional assistance to resolve the problem.
+          body:
+            application/json:
+              schema: error
+              example: |
+                {
+                  "code": "INTERNAL",
+                  "message": "Internal error"
+                }
+  # Addresses / Status
+  /status:
+    post:
+      securedBy: [bearerToken, basicAuth]
+      is: [secured]
+      description: >
+        Create validation status for an address.
+        
+        
+        This service requires a license for the **AddressCheck** function that can be ordered separately. To view functions 
+        available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+        by the **REST API AddressCheck** license key.
+      queryParameters:
+        language:
+          displayName: language
+          type: string
+          description: The language of the validation messages.
+          enum: [ SE, GB, DK, FI ]
+          required: true
+      body:
+        application/json:
+          schema: |
+            {
+              "type": "object",
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "required": [ "name", "city", "countryCode" ],
+              "properties": {
+                "name":        { "type": "string" },
+                "address1":    { "type": "string" },
+                "address2":    { "type": "string" },
+                "zipcode":     { "type": "string" },
+                "city":        { "type": "string" },
+                "state":       { "type": "string" },
+                "countryCode": { "type": "string" },
+                "contact":     { "type": "string" },
+                "phone":       { "type": "string" },
+                "fax":         { "type": "string" },
+                "email":       { "type": "string" },
+                "sms":         { "type": "string" }
+              }
+            }
+          example: |
+            {
+              "name": "Unifaun AB",
+              "address1": "Skeppsbron 5-6",
+              "address2": "",
+              "zipcode": "4112",
+              "city": "GOTHENBURG",
+              "state": "",
+              "countryCode": "SE",
+              "contact": "Sven Svensson",
+              "phone": "031-7253500",
+              "fax": "",
+              "email": "info@unifaun.se",
+              "sms": ""
+            }
+      responses:
+        200:
+          body:
+            application/json:
+              schema: |
+                {
+                  "type": "array",
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "location":  { "type": "string" },
+                      "messageId": { "type": "string" },
+                      "message":   { "type": "string" },
+                      "arguments": { "type": "string" },
+                      "error":     { "type": "boolean" }
+                    }
+                  }
+                }
+              example: |
+                [{
+                  "location": "Zipcode",
+                  "messageId": "WSAPIError.ZipCode",
+                  "message": "Not valid postal code.",
+                  "arguments": ["Sweden (NNNNN)"],
+                  "error": true
+                }, {
+                  "location": "Zipcode",
+                  "messageId": "WSAPIError.ZipCodeNotExists",
+                  "message": "Postal code doesnt exists",
+                  "arguments": null,
+                  "error": false
+                }]
+        400:
+          description: >
+            Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+          body:
+            application/json:
+              schema: error
+              example: |
+                {
+                  "code": "MISSING",
+                  "message": "Missing address body data"
+                }
+        500:
+          description: >
+            Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+            Unifaun Support for additional assistance to resolve the problem.
+          body:
+            application/json:
+              schema: error
+              example: |
+                {
+                  "code": "INTERNAL",
+                  "message": "Internal error"
+                }
+  # Addresses / Zipcodes
+  /zipcodes:
+    get:
+      securedBy: [bearerToken, basicAuth]
+      is: [secured]
+      description: >
+        Get zip code information.
+        
+        
+        This service requires a license for the **ZipCheck** function that can be ordered separately. To view functions 
+        available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+        by the **REST API ZipCheck** license key.
+      queryParameters:
+        zip:
+          displayName: zip
+          type: string
+          description: The zip code to get information about.
+          example: 41121
+          required: true
+        countryCode:
+          displayName: countryCode
+          type: string
+          description: Two letter country code (from ISO-3166-1 alpha-2).
+          example: SE
+          required: true
+      responses:
+        200:
+          body:
+            application/json:
+              schema: |
+                {
+                  "type": "object",
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "properties": {
+                    "city":     { "type": "string" },
+                    "pattern":  { "type": "string" },
+                    "valid":    { "type": "boolean" },
+                    "box":      { "type": "boolean" },
+                    "rural":    { "type": "boolean" },
+                    "customer": { "type": "boolean" }
+                  }
+                }
+              example: |
+                {
+                  "city": "STOCKHOLM",
+                  "pattern": "NNNNN",
+                  "valid": true,
+                  "box": false,
+                  "rural": false,
+                  "customer": false
+                }
+        400:
+          description: >
+            Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+          body:
+            application/json:
+              schema: error
+              example: |
+                {
+                  "code": "MISSING",
+                  "message": "Missing zip argument"
+                }
+        500:
+          description: >
+            Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+            Unifaun Support for additional assistance to resolve the problem.
+          body:
+            application/json:
+              schema: error
+              example: |
+                {
+                  "code": "INTERNAL",
+                  "message": "Internal error"
+                }
+# Stored Shipments
+/stored-shipments:
+  get:
+    securedBy: [bearerToken, basicAuth]
+    is: [secured]
+    description: >
+      Fetch a list of stored shipments information.
+      
+      
+      Use the query parameters to filter which stored shipments will be returned in the list.
+      
+      Please note that a maxium of 50 stored shipments will be returned.
+      
+      
+      This service requires a license for the **APIConnect** function that can be ordered separately. To view functions 
+      available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+      by the **REST API Store** license key.
+    queryParameters:
+      searchField:
+        displayName: searchField
+        type: string
+        description: The field to search in.
+        enum: [ orderNo, reference, shipmentNo ]
+        required: false
+      searchOp:
+        displayName: searchOp
+        type: string
+        description: The operator used on the field.
+        enum: [ equals, contains, startsWith, endsWith ]
+        required: false
+      searchValue:
+        displayName: searchValue
+        type: string
+        description: The value to search for in the field
+        required: false
+      dateType:
+        displayName: dateType
+        type: string
+        description: The type of date to filter on.
+        enum: [ created, ship ]
+        required: false
+      dateFrom:
+        displayName: dateFrom
+        type: string
+        description: The lower limit of a date interval to filter on. Must be in ISO-8601 date format.
+        required: false
+      dateTo:
+        displayName: dateTo
+        type: string
+        description: The upper limit of a date interval to filter on. Must be in ISO-8601 date format.
+        required: false
+      status:
+        displayName: status
+        type: string
+        description: The status value to filter on.
+        enum: [ ready, invalid, failed, warned ]
+        required: false
+    responses:
+      200:
+        body:
+          application/json:
+            schema: storedShipmentInfoList
+            example: |
+              [{
+                "href": "https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1/stored-shipments/4127538",
+                "id": "4127538",
+                "sndName": "Unifaun AB",
+                "sndZipcode": "41121",
+                "sndCity": "GÖTEBORG",
+                "sndCountry": "SE",
+                "rcvName": "Unifaun AB",
+                "rcvZipcode": "11359",
+                "rcvCity": "STOCKHOLM",
+                "rcvCountry": "SE",
+                "serviceId": "P15",
+                "orderNo": "order number 123",
+                "reference": "sender ref 234",
+                "parcelCount": 1,
+                "normalShipment": true,
+                "returnShipment": false,
+                "status": "READY",
+                "shipDate": "2015-06-02T14:05:56.342+0000",
+                "created": "2015-06-02T14:05:56.569+0000",
+                "changed": "2015-06-02T14:05:56.569+0000",
+                "statuses": null
+              }]
+      400:
+        description: >
+          Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+        body:
+          application/json:
+            schema: error
+            example: |
+              {
+                "code": "ILLEGAL",
+                "message": "Illegal search field argument"
+              }
+      500:
+        description: >
+          Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+          Unifaun Support for additional assistance to resolve the problem.
+        body:
+          application/json:
+            schema: error
+            example: |
+              {
+                "code": "INTERNAL",
+                "message": "Internal error"
+              }
+  post:
+    securedBy: [bearerToken, basicAuth]
+    is: [secured]
+    description: >
+      Create a new stored shipment.
+      
+      
+      To create a basic shipment only a limited number of values are needed in the shipment data of the request body but the stored
+      shipment will likely not be ready to print. For a stored shipment to be created as *`ready`* the values provided must fulfill the
+      specific requirements of the shipment's service.
+      
+      
+      This service requires a license for the **APIConnect** function that can be ordered separately. To view functions 
+      available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+      by the **REST API Store** license key.
+    body:
+      application/json:
+        schema: shipment
+        example: |
+          {
+            "sender": {
+              "quickId": "1",
+              "name": "Unifaun AB",
+              "address1": "Skeppsbron 5-6",
+              "zipcode": "41121",
+              "city": "GÖTEBORG",
+              "country": "SE",
+              "phone": "+46 31 725 35 00",
+              "email": "info@unifaun.com"
+            },
+            "receiver": {
+              "name": "Unifaun AB",
+              "address1": "Tegnérgatan 34",
+              "zipcode": "11359",
+              "city": "STOCKHOLM",
+              "country": "SE",
+              "phone": "+46 8 34 35 15",
+              "email": "sales@unifaun.com"
+            },
+            "service": {
+              "id": "P15"
+            },
+            "parcels": [{
+              "copies": "1",
+              "weight": "37.5",
+              "contents": "important things",
+              "valuePerParcel": true
+            }],
+            "orderNo": "order number 123",
+            "senderReference": "sender ref 234",
+            "receiverReference": "receiver ref 345",
+            "options": [{
+              "message": "This is order number 123",
+              "to": "sales@unifaun.com",
+              "id": "ENOT",
+              "languageCode": "SE",
+              "from": "info@unifaun.com"
+            }]
+          }
+    responses:
+      201:
+        body:
+          application/json:
+            schema: storedShipmentInfo
+            example: |
+              {
+                "href": "https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1/stored-shipments/4127538",
+                "id": "4127538",
+                "sndName": "Unifaun AB",
+                "sndZipcode": "41121",
+                "sndCity": "GÖTEBORG",
+                "sndCountry": "SE",
+                "rcvName": "Unifaun AB",
+                "rcvZipcode": "11359",
+                "rcvCity": "STOCKHOLM",
+                "rcvCountry": "SE",
+                "serviceId": "P15",
+                "orderNo": "order number 123",
+                "reference": "sender ref 234",
+                "parcelCount": 1,
+                "normalShipment": true,
+                "returnShipment": false,
+                "status": "READY",
+                "shipDate": "2015-06-02T14:05:56.342+0000",
+                "created": "2015-06-02T14:05:56.569+0000",
+                "changed": "2015-06-02T14:05:56.569+0000",
+                "statuses": [{
+                    "message": "maximum value (35) exceeded",
+                    "messageCode": "MaximumFlt",
+                    "field": "ParcelGroup_Weight",
+                    "location": "ParcelGroupWeight",
+                    "type": "ignorable"
+                }]
+              }
+      400:
+        description: >
+          Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+        body:
+          application/json:
+            schema: error
+            example: |
+              {
+                "code": "MISSING",
+                "message": "Missing shipment data in body"
+              }
+      422:
+        description: >
+          Returned when the shipment data in the body could not be processed to create a stored shipment.
+        body:
+          application/json:
+      500:
+        description: >
+          Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+          Unifaun Support for additional assistance to resolve the problem.
+        body:
+          application/json:
+            schema: error
+            example: |
+              {
+                "code": "INTERNAL",
+                "message": "Internal error"
+              }
+  # Stored Shipments / <ID>
+  /{storedId}:
+    uriParameters:
+      storedId:
+        displayName: Stored Shipment ID
+        type: string
+        description: The ID of a stored shipment.
+        required: true
+    delete:
+      securedBy: [bearerToken, basicAuth]
+      is: [secured]
+      description: >
+        Delete a stored shipment.
+        
+        
+        The stored shipment will be completely deleted from the system when this call returns successfully.
+        No further operation will be possible on the ID of the stored shipment.
+        
+        
+        This service requires a license for the **APIConnect** function that can be ordered separately. To view functions 
+        available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+        by the **REST API Store** license key.
+      responses:
+        204:
+          description: >
+            No response body returned when a consolidated shipment is successfully deleted.
+          body:
+            application/json: !!null
+        400:
+          description: >
+            Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+          body:
+            application/json:
+              schema: error
+              example: |
+                {
+                  "code": "MISSING",
+                  "message": "Missing stored shipment id argument"
+                }
+        404:
+          description: >
+            Returned when the stored shipment to delete could not be found.
+          body:
+            application/json: !!null
+        500:
+          description: >
+            Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+            Unifaun Support for additional assistance to resolve the problem.
+          body:
+            application/json:
+              schema: error
+              example: |
+                {
+                  "code": "INTERNAL",
+                  "message": "Internal error"
+                }
+    # Stored Shipments / <ID> / Shipments
+    /shipments:
+      post:
+        securedBy: [bearerToken, basicAuth]
+        is: [secured]
+        description: >
+          Create one or more shipments from a stored shipment.
+          
+          
+          A successful call to this entry point can result in either a shipment or a consolidated shipment. Use the *`consolidated`*
+          value in the result to check what type of object was created.
+          
+          
+          Multiple shipments can be created if the stored shipment represent a combined normal and return shipment.
+          
+          
+          PDF documents will be created according to the provided PDF configuration. Please note that the generated PDF documents will
+          only be available for 1 hour.
+          
+          By default the PDF documents have to be requested from the URL contained in the *`href`* value of *`pdf`* objects in the result. As
+          an option the PDF documents can be inline in the pdf objects in the result. To activate this option include a query parameter
+          named *`inlinePdf`* with the value set to *`true`*.
+          
+          
+          This service requires a license for the **APIConnect** function that can be ordered separately. To view functions 
+          available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+          by the **REST API Print** license key.
+        body:
+          application/json:
+            schema: pdfConfig
+            example: |
+              {
+                "target1Media": "laser-ste",
+                "target1XOffset": 0.0,
+                "target1YOffset": 0.0,
+                "target2Media": "laser-a4",
+                "target2XOffset": 0.0,
+                "target2YOffset": 0.0,
+                "target3Media": null,
+                "target3XOffset": 0.0,
+                "target3YOffset": 0.0,
+                "target4Media": null,
+                "target4XOffset": 0.0,
+                "target4YOffset": 0.0
+              }
+        responses:
+          201:
+            body:
+              application/json:
+                schema: shipmentInfo
+                example: |
+                  [{
+                    "href": "https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1/shipments/5666303",
+                    "id": "5666303",
+                    "sndName": "Unifaun AB",
+                    "sndZipcode": "41121",
+                    "sndCity": "GÖTEBORG",
+                    "sndCountry": "SE",
+                    "rcvName": "Unifaun AB",
+                    "rcvZipcode": "11359",
+                    "rcvCity": "STOCKHOLM",
+                    "rcvCountry": "SE",
+                    "serviceId": "P15",
+                    "shipmentNo": null,
+                    "orderNo": "order number 123",
+                    "reference": "sender ref 234",
+                    "parcelCount": 1,
+                    "parcels": [{
+                      "parcelNo": "69563053687SE",
+                      "reference": null
+                    }],
+                    "normalShipment": false,
+                    "returnShipment": false,
+                    "consolidated": false,
+                    "status": "PRINTED",
+                    "shipDate": "2015-06-02T14:05:56.342+0000",
+                    "created": "2015-06-02T14:05:56.569+0000",
+                    "changed": "2015-06-02T14:05:56.569+0000",
+                    "pdfs": [{
+                      "href": "https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1/shipments/5666303/pdfs/10234334"
+                      "id": "10234334",
+                      "description": "Label",
+                    }],
+                    "previousPdfs": null
+                  }]
+          400:
+            description: >
+              Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+            body:
+              application/json:
+                schema: error
+                example: |
+                  {
+                    "code": "MISSING",
+                    "message": "Missing stored shipment id argument"
+                  }
+          422:
+            description: >
+              Returned when the stored shipment could not be converted to a shipment. The reason for this could be an invalid PDF configuration or
+              a stored shipment with status other than READY.
+            body:
+              application/json: !!null
+          500:
+            description: >
+              Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+              Unifaun Support for additional assistance to resolve the problem.
+            body:
+              application/json:
+                schema: error
+                example: |
+                  {
+                    "code": "INTERNAL",
+                    "message": "Internal error"
+                  }
+# Consolidated Shipments
+/consolidated-shipments:
+  get:
+    securedBy: [bearerToken, basicAuth]
+    is: [secured]
+    description: >
+      Fetch a list of open consolidated shipments.
+      
+      
+      Use the query parameters to filter which consolidated shipments will be returned in the list.
+      
+      Please note that a maxium of 50 consolidated shipments will be returned.
+      
+      
+      This service requires a license for the **APIConnect** and **Consolidation** functions that can be purchased from Unifaun webshop. To view functions 
+      available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+      by the **REST API Print** and **Consolidation** license keys.
+    queryParameters:
+      searchField:
+        displayName: searchField
+        type: string
+        description: The field to search in.
+        enum: [ orderNo, reference, shipmentNo ]
+        required: false
+      searchOp:
+        displayName: searchOp
+        type: string
+        description: The operator used on the field.
+        enum: [ equals, contains, startsWith, endsWith ]
+        required: false
+      searchValue:
+        displayName: searchValue
+        type: string
+        description: The value to search for in the field
+        required: false
+      dateType:
+        displayName: dateType
+        type: string
+        description: The type of date to filter on.
+        enum: [ created, ship ]
+        required: false
+      dateFrom:
+        displayName: dateFrom
+        type: string
+        description: The lower limit of a date interval to filter on. Must be in ISO-8601 date format.
+        required: false
+      dateTo:
+        displayName: dateTo
+        type: string
+        description: The upper limit of a date interval to filter on. Must be in ISO-8601 date format.
+        required: false
+      status:
+        displayName: status
+        type: string
+        description: The status value to filter on.
+        enum: [ ready, invalid, failed, warned ]
+        required: false
+    responses:
+      200:
+        body:
+          application/json:
+            schema: shipmentInfoList
+            example: |
+              [{
+                "href": "https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1/consolidated-shipments/4127561",
+                "id": "4127561",
+                "sndName": "Unifaun AB",
+                "sndCity": "GÖTEBORG",
+                "sndZipcode": "41121",
+                "sndCountry": "SE",
+                "rcvName": "Unifaun AB",
+                "rcvZipcode": "11359",
+                "rcvCity": "STOCKHOLM",
+                "rcvCountry": "SE",
+                "serviceId": "BPA",
+                "shipmentNo": "6047287948",
+                "orderNo": "order number 123",
+                "reference": "sender ref 234",
+                "parcelCount": 1,
+                "status": "PRINTED",
+                "parcels": [{
+                  "parcelNo": "373325380623722154",
+                  "reference": null
+                }],
+                "normalShipment": false,
+                "returnShipment": false,
+                "consolidated": true,
+                "shipDate": "2015-06-08T14:32:58.000+0000",
+                "created": "2015-06-08T14:32:58.000+0000",
+                "changed": "2015-06-08T14:32:58.000+0000",
+                "pdfs": [{
+                  "id": "10234540",
+                  "pdf": null,
+                  "description": "Label",
+                  "href": "https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1/consolidated-shipments/4127561/pdfs/10234540"
+                }],
+                "previousPdfs": []
+              }]
+      400:
+        description: >
+          Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+        body:
+          application/json:
+            schema: error
+            example: |
+              {
+                "code": "ILLEGAL",
+                "message": "Illegal search field argument"
+              }
+      500:
+        description: >
+          Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+          Unifaun Support for additional assistance to resolve the problem.
+        body:
+          application/json:
+            schema: error
+            example: |
+              {
+                "code": "INTERNAL",
+                "message": "Internal error"
+              }
+  post:
+    securedBy: [bearerToken, basicAuth]
+    is: [secured]
+    description: >
+      Create a new consolidated shipment.
+      
+      
+      To create a consolidated shipment, the values in the shipment data of the request body  must fulfill the specific
+      requirements of the shipment's service. If this isn't the case no consolidated shipment will be created and a list
+      of validation errors will be returned instead. To actually create a consolidated shipment the values supplied in the
+      request body must include an *`option`* object with id *`CONSOLIDATE`*. Otherwise a normal shipment will be created instead.
+      To check that a consolidated shipment was created look at the *`consolidated`* value in the result of a successful call.
+      
+      
+      PDF documents will be created according to the provided PDF configuration. Please note that the generated PDF documents will
+      only be available for 1 hour.
+      
+      By default the PDF documents have to be requested from the URL contained in the *`href`* value of *`pdf`* objects in the result. As
+      an option the PDF documents can be inline in the pdf objects in the result. To activate this option include a query parameter
+      named *`inlinePdf`* with the value set to *`true`*.
+      
+      
+      This service requires a license for the **APIConnect** and **Consolidation** functions that can be purchased from Unifaun webshop. To view functions 
+      available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+      by the **REST API Print** and **Consolidation** license keys.
+    body:
+      application/json:
+        schema: shipmentConsolidatePrint
+        example: |
+          {
+            "pdfConfig": {
+              "target4XOffset": 0,
+              "target2YOffset": 0,
+              "target1Media": "laser-ste",
+              "target1YOffset": 0,
+              "target3YOffset": 0,
+              "target2Media": "laser-a4",
+              "target4YOffset": 0,
+              "target4Media": null,
+              "target3XOffset": 0,
+              "target3Media": null,
+              "target1XOffset": 0,
+              "target2XOffset": 0
+            },
+            "shipment": {
+              "sender": {
+                "phone": "+46 31 725 35 00",
+                "email": "info@unifaun.com",
+                "quickId": "1",
+                "zipcode": "41121",
+                "name": "Unifaun AB",
+                "address1": "Skeppsbron 5-6",
+                "country": "SE",
+                "city": "GÖTEBORG"
+              },
+              "parcels": [{
+                "copies": "1",
+                "weight": "2.75",
+                "contents": "important things",
+                "valuePerParcel": true,
+                "volume": "0.12",
+                "packageCode": "PC"
+              }],
+              "orderNo": "order number 123",
+              "receiver": {
+                "phone": "+46 8 34 35 15",
+                "email": "sales@unifaun.com",
+                "zipcode": "11359",
+                "name": "Unifaun AB",
+                "address1": "Tegnérgatan 34",
+                "country": "SE",
+                "city": "STOCKHOLM"
+              },
+              "senderReference": "sender ref 234",
+              "service": {
+                "id": "BPA"
+              },
+              "receiverReference": "receiver ref 345",
+              "options": [{
+                "message": "This is order number 123",
+                "to": "sales@unifaun.com",
+                "id": "ENOT",
+                "languageCode": "SE",
+                "from": "info@unifaun.com"
+              },
+              {
+                "id": "CONSOLIDATE",
+                "sendEmail": false,
+                "key": "testapi1"
+              }]
+            }
+          }
+    responses:
+      201:
+        body:
+          application/json:
+            schema: shipmentInfoList
+            example: |
+              [{
+                "href": "https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1/consolidated-shipments/4127561",
+                "id": "4127561",
+                "sndName": "Unifaun AB",
+                "sndCity": "GÖTEBORG",
+                "sndZipcode": "41121",
+                "sndCountry": "SE",
+                "rcvName": "Unifaun AB",
+                "rcvZipcode": "11359",
+                "rcvCity": "STOCKHOLM",
+                "rcvCountry": "SE",
+                "serviceId": "BPA",
+                "shipmentNo": "6047287948",
+                "orderNo": "order number 123",
+                "reference": "sender ref 234",
+                "parcelCount": 1,
+                "status": "PRINTED",
+                "parcels": [{
+                  "parcelNo": "373325380623722154",
+                  "reference": null
+                }],
+                "normalShipment": false,
+                "returnShipment": false,
+                "consolidated": true,
+                "shipDate": "2015-06-08T14:32:58.000+0000",
+                "created": "2015-06-08T14:32:58.000+0000",
+                "changed": "2015-06-08T14:32:58.000+0000",
+                "pdfs": [{
+                  "id": "10234540",
+                  "pdf": null,
+                  "description": "Label",
+                  "href": "https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1/consolidated-shipments/4127561/pdfs/10234540"
+                }],
+                "previousPdfs": []
+              }]
+      400:
+        description: >
+          Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+        body:
+          application/json:
+            schema: error
+            example: |
+              {
+                "code": "MISSING",
+                "message": "Missing shipment consolidate print request body"
+              }
+      422:
+        description: >
+          Returned when a shipment could not be created from the body data. The reason for this could be an invalid PDF configuration or shipment data
+          with validation errors.
+        body:
+          application/json:
+            schema: statusList
+            example: |
+              [{
+                "message": "maximum value (35) exceeded",
+                "messageCode": "MaximumFlt",
+                "field": "ParcelGroup_Weight",
+                "location": "ParcelGroupWeight",
+                "type": "ignorable"
+              },
+              {
+                "message": "Not valid postal code",
+                "messageCode": "ZipCode",
+                "field": "Address_Zipcode",
+                "location": "",
+                "type": "error"
+              }]
+      500:
+        description: >
+          Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+          Unifaun Support for additional assistance to resolve the problem.
+        body:
+          application/json:
+            schema: error
+            example: |
+              {
+                "code": "INTERNAL",
+                "message": "Internal error"
+              }
+  # Consolidated Shipments / <ID>
+  /{consolidatedId}:
+    uriParameters:
+      consolidatedId:
+        displayName: Consolidated Shipment ID
+        type: string
+        description: The ID of a consolidated shipment.
+        required: true
+    delete:
+      securedBy: [bearerToken, basicAuth]
+      is: [secured]
+      description: >
+        Delete a consolidated shipment.
+        
+        
+        The consolidated shipment will be removed from the system after a successful call to this entry point. A cancelled shipment
+        object will be added to shipments to represent the previously printed documents from this consolidated shipment.
+        
+        
+        This service requires a license for the **APIConnect** and **Consolidation** functions that can be purchased from Unifaun webshop. To view functions 
+        available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+        by the **REST API Discard** and **Consolidation** license keys.
+      responses:
+        204:
+          body:
+            application/json: !!null
+        400:
+          description: >
+            Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+          body:
+            application/json:
+              schema: error
+              example: |
+                {
+                  "code": "MISSING",
+                  "message": "Missing shipment id argument"
+                }
+        404:
+          description: >
+            Returned when the shipment to delete could not be found.
+          body:
+            application/json: !!null
+        500:
+          description: >
+            Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+            Unifaun Support for additional assistance to resolve the problem.
+          body:
+            application/json:
+              schema: error
+              example: |
+                {
+                  "code": "INTERNAL",
+                  "message": "Internal error"
+                }
+    # Consolidated Shipments / <ID> / PDFs
+    /pdfs:
+      get:
+        securedBy: [bearerToken, basicAuth]
+        is: [secured]
+        description: >
+          Fetch a list of all PDF documents for a consolidated shipment.
+          
+          
+          Please note that generated PDF documents are only available for 1 hour.
+          
+          
+          This service requires a license for the **APIConnect** and **Consolidation** functions that can be purchased from Unifaun webshop. To view functions 
+          available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+          by the **REST API Print** and **Consolidation** license keys.
+        responses:
+          200:
+            body:
+              application/json:
+                schema: pdfList
+                example: |
+                  [{
+                    "id": "10234514",
+                    "pdf": null,
+                    "description": "Label",
+                    "href": "https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1/shipments/5666308/pdfs/10234514"
+                  }]
+          400:
+            description: >
+              Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+            body:
+              application/json:
+                schema: error
+                example: |
+                  {
+                    "code": "MISSING",
+                    "message": "Missing consolidated shipment id argument"
+                  }
+          500:
+            description: >
+              Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+              Unifaun Support for additional assistance to resolve the problem.
+            body:
+              application/json:
+                schema: error
+                example: |
+                  {
+                    "code": "INTERNAL",
+                    "message": "Internal error"
+                  }
+      # Consolidated Shipments / <ID> / PDFs / <ID>
+      /{pdfId}:
+        uriParameters:
+          pdfId:
+            displayName: PDF ID
+            type: string
+            description: The ID of a PDF document.
+            required: true
+        get:
+          securedBy: [bearerToken, basicAuth]
+          is: [secured]
+          description: >
+            Fetch a PDF document for a consolidated shipment.
+            
+            
+            The PDF document is streamed as a raw binary stream from this entry point.
+            
+            
+            This service requires a license for the **APIConnect** and **Consolidation** functions that can be purchased from Unifaun webshop. To view functions 
+            available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+            by the **REST API Print** and **Consolidation** license keys.
+          responses:
+            200:
+              body:
+                application/pdf:
+                  example: |
+                    A PDF file.
+            400:
+              description: >
+                Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+              body:
+                application/json:
+                  schema: error
+                  example: |
+                    {
+                      "code": "MISSING",
+                      "message": "Missing shipment id argument"
+                    }
+            404:
+              description: >
+                Returned when the PDF could not be found.
+              body:
+                application/json: !!null
+            500:
+              description: >
+                Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+                Unifaun Support for additional assistance to resolve the problem.
+              body:
+                application/json:
+                  schema: error
+                  example: |
+                    {
+                      "code": "INTERNAL",
+                      "message": "Internal error"
+                    }
+    # Consolidated Shipments / <ID> / shipments
+    /shipments:
+      post:
+        securedBy: [bearerToken, basicAuth]
+        is: [secured]
+        description: >
+          Close an open consolidated shipment and create PDF documents of any shipment level documents.
+          
+          
+          PDF documents will be created according to the provided PDF configuration. Please note that the generated PDF documents will
+          only be available for 1 hour.
+          
+          By default the PDF documents have to be requested from the URL contained in the *`href`* value of *`pdf`* objects in the result. As
+          an option the PDF documents can be inline in the pdf objects in the result. To activate this option include a query parameter
+          named *`inlinePdf`* with the value set to *`true`*.
+          
+          
+          This service requires a license for the **APIConnect** and **Consolidation** functions that can be purchased from Unifaun webshop. To view functions 
+          available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+          by the **REST API Print** and **Consolidation** license keys.
+        body:
+          application/json:
+            schema: pdfConfig
+            example: |
+              {
+                "target1Media": "laser-ste",
+                "target1XOffset": 0.0,
+                "target1YOffset": 0.0,
+                "target2Media": "laser-a4",
+                "target2XOffset": 0.0,
+                "target2YOffset": 0.0,
+                "target3Media": null,
+                "target3XOffset": 0.0,
+                "target3YOffset": 0.0,
+                "target4Media": null,
+                "target4XOffset": 0.0,
+                "target4YOffset": 0.0
+              }
+        responses:
+          201:
+            body:
+              application/json:
+                schema: shipmentInfo
+                example: |
+                  [{
+                    "href": "https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1/consolidated-shipments/4127561",
+                    "id": "4127561",
+                    "sndName": "Unifaun AB",
+                    "sndCity": "GÖTEBORG",
+                    "sndZipcode": "41121",
+                    "sndCountry": "SE",
+                    "rcvName": "Unifaun AB",
+                    "rcvZipcode": "11359",
+                    "rcvCity": "STOCKHOLM",
+                    "rcvCountry": "SE",
+                    "serviceId": "BPA",
+                    "shipmentNo": "6047287948",
+                    "orderNo": "order number 123",
+                    "reference": "sender ref 234",
+                    "parcelCount": 1,
+                    "status": "PRINTED",
+                    "parcels": [{
+                      "parcelNo": "373325380623722154",
+                      "reference": null
+                    }],
+                    "normalShipment": false,
+                    "returnShipment": false,
+                    "consolidated": true,
+                    "shipDate": "2015-06-08T14:32:58.000+0000",
+                    "created": "2015-06-08T14:32:58.000+0000",
+                    "changed": "2015-06-08T14:32:58.000+0000",
+                    "pdfs": [{
+                      "id": "10234541",
+                      "pdf": null,
+                      "description": "Waybill",
+                      "href": "https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1/consolidated-shipments/4127561/pdfs/10234541"
+                    }],
+                    "previousPdfs": []
+                  }]
+          400:
+            description: >
+              Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+            body:
+              application/json:
+                schema: error
+                example: |
+                  {
+                    "code": "MISSING",
+                    "message": "Missing consolidated shipment id argument"
+                  }
+          422:
+            description: >
+              Returned when the stored shipment could not be converted to a shipment. The reason for this could be an invalid PDF configuration.
+            body:
+              application/json: !!null
+          500:
+            description: >
+              Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+              Unifaun Support for additional assistance to resolve the problem.
+            body:
+              application/json:
+                schema: error
+                example: |
+                  {
+                    "code": "INTERNAL",
+                    "message": "Internal error"
+                  }
+# Shipments
+/shipments:
+  get:
+    securedBy: [bearerToken, basicAuth]
+    is: [secured]
+    description: >
+      Fetch information about printed shipments.
+      
+      
+      To fetch batches of printed shipments this entry point uses a query parameter *`fetchId`* to track which shipments have
+      been returned by previous calls. A client using this entry point should save the *`fetchId`* returned by a previous call and
+      use that as parameter value for the next call. If no *`fetchId`* is available from a previous call the value -1 can used to make
+      a call that will return the *`fetchId`* to use in a subsequent call.
+      
+      
+      No more than 100 shipments are returned as a result of a single call. If more than 100 shipments are available the *`done`* value
+      in the result will be *`false`* and you should make another call to fetch the remaining shipments. Repeated calls when *`done`*
+      is *`false`* are not subject to the rate limits (see below) of this entry point.
+      
+      
+      There is a rate limit on this entry point and if calls are made too fast the *`minDelay`* value in the result will return how long
+      you have to wait (in milliseconds) before calling again. To avoid an uneven call rate because of the rate limit try to keep the call
+      rate to less than one call per five minutes.
+      
+      
+      This service requires a license for the **TrackBack** function that can be ordered separately. To view functions 
+      available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+      by **REST API TrackBack** license key.
+    queryParameters:
+      fetchId:
+        displayName: fetchId
+        type: string
+        description: The ID of the next batch of shipments to fetch.
+        required: false
+    responses:
+      200:
+        body:
+          application/json:
+            schema: shipmentFetchInfoList
+            example: |
+              {
+                "fetchId": "1",
+                "minDelay": 100,
+                "done": true,
+                "shipments": [{
+                  "href": "https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1/shipments/5666306",
+                  "id": "5666306",
+                  "sndName": "Unifaun AB",
+                  "sndZipcode": "41121",
+                  "sndCity": "GÖTEBORG",
+                  "sndCountry": "SE",
+                  "rcvName": "Unifaun AB",
+                  "rcvZipcode": "11359",
+                  "rcvCity": "STOCKHOLM",
+                  "rcvCountry": "SE",
+                  "serviceId": "P15",
+                  "shipmentNo": null,
+                  "orderNo": "order number 123",
+                  "reference": "sender ref 234",
+                  "parcelCount": 1,
+                  "parcels": [{
+                    "parcelNo": "69563053713SE",
+                    "reference": null
+                  }],
+                  "normalShipment": false,
+                  "returnShipment": false,
+                  "consolidated": false,
+                  "status": "PRINTED",
+                  "shipDate": "2015-06-03T13:18:30.000+0000",
+                  "created": "2015-06-03T13:18:30.904+0000",
+                  "changed": "2015-06-03T13:18:30.904+0000",
+                  "pdfs": null,
+                  "previousPdfs": null
+                }]
+              }
+      400:
+        description: >
+          Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+        body:
+          application/json:
+            schema: error
+            example: |
+              {
+                "code": "MISSING",
+                "message": "Missing fetch id argument"
+              }
+      500:
+        description: >
+          Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+          Unifaun Support for additional assistance to resolve the problem.
+        body:
+          application/json:
+            schema: error
+            example: |
+              {
+                "code": "INTERNAL",
+                "message": "Internal error"
+              }
+  post:
+    securedBy: [bearerToken, basicAuth]
+    is: [secured]
+    description: >
+      Create a new shipment.
+      
+      
+      To create a shipment, the values in the shipment data of the request body  must fulfill the specific
+      requirements of the shipment's service. If this isn't the case no shipment will be created and a list
+      of validation errors will be returned instead. To actually create a shipment the values supplied in the
+      request body must **not** include an *`option`* object with id *`CONSOLIDATE`*. Otherwise a consolidated
+      shipment will be created instead of a normal shipment.
+      To check that a normal shipment was created look at the *`consolidated`* value in the result of a successful call.
+      
+      
+      PDF documents will be created according to the provided PDF configuration. Please note that the generated PDF documents will
+      only be available for 1 hour.
+      
+      By default the PDF documents have to be requested from the URL contained in the *`href`* value of *`pdf`* objects in the result. As
+      an option the PDF documents can be inline in the pdf objects in the result. To activate this option include a query parameter
+      named *`inlinePdf`* with the value set to *`true`*.
+      
+      
+      This service requires a license for the **APIConnect** function that can be ordered separately. To view functions 
+      available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+      by the **REST API Print** license key.
+    body:
+      application/json:
+        schema: shipmentPrint
+        example: |
+          {
+            "pdfConfig": {
+              "target4XOffset": 0,
+              "target2YOffset": 0,
+              "target1Media": "laser-ste",
+              "target1YOffset": 0,
+              "target3YOffset": 0,
+              "target2Media": "laser-a4",
+              "target4YOffset": 0,
+              "target4Media": null,
+              "target3XOffset": 0,
+              "target3Media": null,
+              "target1XOffset": 0,
+              "target2XOffset": 0
+            },
+            "shipment": {
+              "sender": {
+                "phone": "+46 31 725 35 00",
+                "email": "info@unifaun.com",
+                "quickId": "1",
+                "zipcode": "41121",
+                "name": "Unifaun AB",
+                "address1": "Skeppsbron 5-6",
+                "country": "SE",
+                "city": "GÖTEBORG"
+              },
+              "parcels": [{
+                "copies": "1",
+                "weight": "2.75",
+                "contents": "important things",
+                "valuePerParcel": true
+              }],
+              "orderNo": "order number 123",
+              "receiver": {
+                "phone": "+46 8 34 35 15",
+                "email": "sales@unifaun.com",
+                "zipcode": "11359",
+                "name": "Unifaun AB",
+                "address1": "Tegnérgatan 34",
+                "country": "SE",
+                "city": "STOCKHOLM"
+              },
+              "senderReference": "sender ref 234",
+              "service": {
+                "id": "P15"
+              },
+              "receiverReference": "receiver ref 345",
+              "options": [{
+                "message": "This is order number 123",
+                "to": "sales@unifaun.com",
+                "id": "ENOT",
+                "languageCode": "SE",
+                "from": "info@unifaun.com"
+              }]
+            }
+          }
+    responses:
+      201:
+        body:
+          application/json:
+            schema: shipmentInfoList
+            example: |
+              [{
+                "href": "https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1/shipments/5666306",
+                "id": "5666306",
+                "sndName": "Unifaun AB",
+                "sndZipcode": "41121",
+                "sndCity": "GÖTEBORG",
+                "sndCountry": "SE",
+                "rcvName": "Unifaun AB",
+                "rcvZipcode": "11359",
+                "rcvCity": "STOCKHOLM",
+                "rcvCountry": "SE",
+                "serviceId": "P15",
+                "shipmentNo": null,
+                "orderNo": "order number 123",
+                "reference": "sender ref 234",
+                "parcelCount": 1,
+                "parcels": [{
+                  "parcelNo": "69563053713SE",
+                  "reference": null
+                }],
+                "normalShipment": false,
+                "returnShipment": false,
+                "consolidated": false,
+                "status": "PRINTED",
+                "shipDate": "2015-06-03T13:18:30.000+0000",
+                "created": "2015-06-03T13:18:30.904+0000",
+                "changed": "2015-06-03T13:18:30.904+0000",
+                "pdfs": [{
+                  "id": "10234441",
+                  "pdf": null,
+                  "description": "Label",
+                  "href": "https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1/shipments/5666306/pdfs/10234441"
+                }],
+                "previousPdfs": null
+              }]
+      400:
+        description: >
+          Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+        body:
+          application/json:
+            schema: error
+            example: |
+              {
+                "code": "MISSING",
+                "message": "Missing shipment print request body"
+              }
+      422:
+        description: >
+          Returned when a shipment could not be created from the body data. The reason for this could be an invalid PDF configuration or shipment data
+          with validation errors.
+        body:
+          application/json:
+            schema: statusList
+            example: |
+              [{
+                "message": "maximum value (35) exceeded",
+                "messageCode": "MaximumFlt",
+                "field": "ParcelGroup_Weight",
+                "location": "ParcelGroupWeight",
+                "type": "ignorable"
+              },
+              {
+                "message": "Not valid postal code",
+                "messageCode": "ZipCode",
+                "field": "Address_Zipcode",
+                "location": "",
+                "type": "error"
+              }]
+      500:
+        description: >
+          Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+          Unifaun Support for additional assistance to resolve the problem.
+        body:
+          application/json:
+            schema: error
+            example: |
+              {
+                "code": "INTERNAL",
+                "message": "Internal error"
+              }
+  # Shipments / <ID>
+  /{shipmentId}:
+    uriParameters:
+      shipmentId:
+        displayName: Shipment ID
+        type: string
+        description: The ID of a shipment
+        required: true
+    delete:
+      securedBy: [bearerToken, basicAuth]
+      is: [secured]
+      description: >
+        Cancel a shipment.
+        
+        
+        After a successful call to this entry point the shipment will get a *`cancelled`* status. A cancel message will
+        be sent for the shipment if it is supported by the carrier.
+        
+        
+        This service requires a license for the **APIConnect** function that can be ordered separately. To view functions 
+        available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+        by the **REST API Discard** license key.
+      responses:
+        204:
+          body:
+            application/json: !!null
+        400:
+          description: >
+            Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+          body:
+            application/json:
+              schema: error
+              example: |
+                {
+                  "code": "MISSING",
+                  "message": "Missing shipment id argument"
+                }
+        404:
+          description: >
+            Returned when the shipment to delete could not be found.
+          body:
+            application/json: !!null
+        500:
+          description: >
+            Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+            Unifaun Support for additional assistance to resolve the problem.
+          body:
+            application/json:
+              schema: error
+              example: |
+                {
+                  "code": "INTERNAL",
+                  "message": "Internal error"
+                }
+    # Shipments / <ID> / PDFs
+    /pdfs:
+      get:
+        securedBy: [bearerToken, basicAuth]
+        is: [secured]
+        description: >
+          Fetch a list of all PDF documents for a shipment.
+          
+          
+          Please note that generated PDF documents are only available for 1 hour.
+          
+          
+          This service requires a license for the **APIConnect** function that can be ordered separately. To view functions 
+          available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+          by the **REST API Print** license key.
+        responses:
+          200:
+            body:
+              application/json:
+                schema: pdfList
+                example: |
+                  [{
+                    "id": "10234514",
+                    "pdf": null,
+                    "description": "Label",
+                    "href": "https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1/shipments/5666308/pdfs/10234514"
+                  }]
+          400:
+            description: >
+              Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+            body:
+              application/json:
+                schema: error
+                example: |
+                  {
+                    "code": "MISSING",
+                    "message": "Missing shipment id argument"
+                  }
+          500:
+            description: >
+              Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+              Unifaun Support for additional assistance to resolve the problem.
+            body:
+              application/json:
+                schema: error
+                example: |
+                  {
+                    "code": "INTERNAL",
+                    "message": "Internal error"
+                  }
+      # Shipments / <ID> / PDFs / <ID>
+      /{pdfId}:
+        uriParameters:
+          pdfId:
+            displayName: PDF ID
+            type: string
+            description: The ID of a PDF document.
+            required: true
+        get:
+          securedBy: [bearerToken, basicAuth]
+          is: [secured]
+          description: >
+            Fetch a PDF document for a consolidated shipment.
+            
+            
+            The PDF document is streamed as a raw binary stream from this entry point.
+            
+            
+            This service requires a license for the **APIConnect** function that can be ordered separately. To view functions 
+            available to you, go to *Help* -> *Session* menu in your account and look in the License keys section. This function is represented
+            by the **REST API Print** license key.
+          responses:
+            200:
+              body:
+                application/pdf:
+                  example: |
+                    A PDF file.
+            400:
+              description: >
+                Returned for missing or illegal arguments. This applies to path arguments, query arguments and body data.
+              body:
+                application/json:
+                  schema: error
+                  example: |
+                    {
+                      "code": "MISSING",
+                      "message": "Missing shipment id argument"
+                    }
+            404:
+              description: >
+                Returned when the PDF could not be found.
+              body:
+                application/json: !!null
+            500:
+              description: >
+                Returned for internal server errors. If the error isn't resolved within a couple of minutes please contact
+                Unifaun Support for additional assistance to resolve the problem.
+              body:
+                application/json:
+                  schema: error
+                  example: |
+                    {
+                      "code": "INTERNAL",
+                      "message": "Internal error"
+                    }

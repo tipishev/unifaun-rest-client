@@ -1,0 +1,14 @@
+{
+  "type": "array",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "items": {
+    "type": "object",
+    "properties": {
+      "message":     { "type": "string" },
+      "messageCode": { "type": "string" },
+      "field":       { "type": "string" },
+      "location":    { "type": "string" },
+      "type":        { "type": "string" }
+    }
+  }
+}

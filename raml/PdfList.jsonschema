@@ -1,0 +1,14 @@
+{
+  "type": "array",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "required": [ "href", "id" ],
+  "items": {
+    "type": "object",
+    "properties": {
+      "href":        { "type": "string" },
+      "id":          { "type": "string" },
+      "description": { "type": "string" },
+      "pdf":         { "type": "string" }
+    }
+  }
+}
