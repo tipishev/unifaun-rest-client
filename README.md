@@ -4,8 +4,8 @@
 
 ```python
 from unifaun import UnifaunClient
-from unifaun.carriers import DB_Schenker_Sverige as Schenker
-from unifaun.countries import Sweden
+from unifaun.codes.carriers import DB_Schenker_Sverige as Schenker
+from unifaun.codes.countries import Sweden
 
 client = UnifaunClient(user=API_ID, password=API_SECRET)
 local_pickups = client.get_agents(zip=17144, countryCode=Sweden, type=Schenker)
