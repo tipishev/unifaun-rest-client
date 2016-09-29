@@ -30,6 +30,7 @@ class UnifaunClient(BaseClient):
 
     def create_address_validation_status(self):
         '''post /addresses/status'''
+        raise NotImplemented
 
     def get_zipcode_info(self, zip, countryCode):
         query_parameters = {
@@ -40,36 +41,47 @@ class UnifaunClient(BaseClient):
 
     def get_stored_shipments(self):
         '''get /stored-shipments'''
+        raise NotImplemented
 
     def create_stored_shipment(self):
         '''post /stored-shipments'''
+        raise NotImplemented
 
     def delete_stored_shipment(self):
         '''delete /stored-shipments/{storedId}'''
+        raise NotImplemented
 
     def create_shipment_from_stored(self):
         '''post /stored-shipments/{storedId}/shipments'''
+        raise NotImplemented
 
     def get_consolidated_shipments(self):
         '''get /consolidated-shipments'''
+        raise NotImplemented
 
     def create_consolidated_shipment(self):
         '''post /consolidated-shipments'''
+        raise NotImplemented
 
     def delete_consolidated_shipment(self):
         '''delete /consolidated-shipments/{consolidatedId}'''
+        raise NotImplemented
 
     def get_consolidated_shipment_pdfs(self):
         '''get /consolidated-shipments/{consolidatedId}/pdfs'''
+        raise NotImplemented
 
     def get_consolidated_shipment_pdf(self):
         '''get /consolidated-shipments/{consolidatedId}/pdfs/{pdfId}'''
+        raise NotImplemented
 
     def add_to_consolidated_shipments(self):
         '''post /consolidated-shipments/{consolidatedId}/shipments'''
+        raise NotImplemented
 
     def get_shipments(self):
         '''get /shipments'''
+        raise NotImplemented
 
     def create_shipment(self, pdfConfig, shipment):
         json = {
@@ -80,9 +92,12 @@ class UnifaunClient(BaseClient):
 
     def delete_shipment(self):
         '''delete /shipments/{shipmentId}'''
+        raise NotImplemented
 
     def get_shipment_pdfs(self):
         '''get /shipments/{shipmentId}/pdfs'''
+        raise NotImplemented
 
     def get_shipment_pdf(self):
         '''get /shipments/{shipmentId}/pdfs/{pdfId}'''
+        raise NotImplemented
