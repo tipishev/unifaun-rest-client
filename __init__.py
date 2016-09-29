@@ -41,8 +41,16 @@ class UnifaunClient(BaseClient):
     def create_address_validation_status(self):
         '''post /addresses/status'''
 
-    def get_zipcode_info(self):
-        '''get /addresses/zipcodes'''
+    def get_zipcode_info(
+            self,
+            zip='17147',
+            countryCode=SE,
+    ):
+        query_parameters = {
+            'zip': zip,
+            'countryCode': countryCode,
+        }
+        return self._get('/addresses/zipcodes', params=query_parameters)
 
     def get_stored_shipments(self):
         '''get /stored-shipments'''
