@@ -7,6 +7,7 @@ securitySchemes:
   - bearerToken:
       description: Custom Bearer Token authentication based on an API Key.
       type: x-custom-bearer-token
+      settings: none
       describedBy:
         headers:
           Authorization:
@@ -24,6 +25,7 @@ securitySchemes:
       description: >
         Basic authentication using an API Key.
       type: Basic Authentication
+      settings: none
       describedBy:
         responses:
           401:
