@@ -1,6 +1,6 @@
 import requests
 
-BASE_URI = 'https://api.unifaun.com/ufoweb-prod-201609231347/rs-extapi/v1'
+BASE_URI = 'https://api.unifaun.com/rs-extapi/v1'
 
 
 class Api(object):
