@@ -1,8 +1,5 @@
 import requests
 
-from enums import CARRIERS, COUNTRIES
-from pdf_configs import DEFAULT
-
 BASE_URI = 'https://api.unifaun.com/rs-extapi/v1'
 
 class BaseClient(object):
@@ -74,8 +71,12 @@ class UnifaunClient(BaseClient):
     def get_shipments(self):
         '''get /shipments'''
 
-    def create_shipment(self, pdfConfig=DEFAULT):
-        '''post /shipments'''
+    def create_shipment(self, pdfConfig, shipment):
+        json = {
+            'pdfConfig': pdfConfig,
+            'shipment': shipment,
+        }
+        self._post('/shipments', json=json)
 
     def delete_shipment(self):
         '''delete /shipments/{shipmentId}'''
