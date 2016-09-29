@@ -5,10 +5,6 @@ from pdf_configs import DEFAULT
 
 BASE_URI = 'https://api.unifaun.com/rs-extapi/v1'
 
-SE = COUNTRIES['Sweden']
-SCHENKER = CARRIERS['DB Schenker Sverige']
-
-
 class BaseClient(object):
 
     def __init__(self, base_uri=BASE_URI, user=None, password=None):
