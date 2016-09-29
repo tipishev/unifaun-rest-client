@@ -4,10 +4,12 @@
 
 ```python
 from unifaun import UnifaunClient
-from enums import CARRIERS
+from unifaun.carriers import DB_Schenker_Sverige as Schenker
+from unifaun.countries import Sweden
 
 client = UnifaunClient(user=API_ID, password=API_SECRET)
-client.get_agents(zip=17144, type=CARRIERS['DB Schenker Sverige'])
+local_pickups = client.get_agents(zip=17144, countryCode=Sweden, type=Schenker)
+print(local_pickups)
 ```
 
 ```
@@ -27,5 +29,4 @@ client.get_agents(zip=17144, type=CARRIERS['DB Schenker Sverige'])
   'sms': None,
   'state': None,
   'zipcode': '17144'}]
-
 ```
