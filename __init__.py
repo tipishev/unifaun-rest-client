@@ -1,9 +1,14 @@
 import requests
 
+from enums import CARRIERS, COUNTRIES
+
 BASE_URI = 'https://api.unifaun.com/rs-extapi/v1'
 
+SE = COUNTRIES['Sweden']
+SCHENKER = CARRIERS['DB Schenker Sverige']
 
-class Api(object):
+
+class BaseClient(object):
 
     def __init__(self, base_uri=BASE_URI, user=None, password=None):
         self.base_uri = base_uri
@@ -11,8 +16,27 @@ class Api(object):
         if user and password:
             self.session.auth = (user, password)
 
-    def get_agents(self):
-        '''get /addresses/agents'''
+    def _get(self, url, **kwargs):
+        return self.session.get(self.base_uri + url, **kwargs)
+
+
+class UnifaunClient(BaseClient):
+    '''Unifaun-specific logic'''
+
+    def get_agents(
+        self,
+        type=SCHENKER,
+        zip='17147',
+        street='',
+        countryCode=SE,
+    ):
+        query_parameters = {
+            'type': type,
+            'zip': zip,
+            'street': street,
+            'countryCode': countryCode,
+        }
+        return self._get('/addresses/agents', params=query_parameters)
 
     def create_address_validation_status(self):
         '''post /addresses/status'''
