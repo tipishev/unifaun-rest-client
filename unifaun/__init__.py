@@ -19,7 +19,7 @@ class BaseClient(object):
 class UnifaunClient(BaseClient):
     '''Unifaun-specific logic'''
 
-    def get_agents(self, type, zip, street, countryCode):
+    def get_agents(self, type, zip, countryCode, street=''):
         query_parameters = {
             'type': type,
             'zip': zip,
